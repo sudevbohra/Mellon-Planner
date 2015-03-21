@@ -51,6 +51,12 @@ MIDDLEWARE_CLASSES = (
 
 ROOT_URLCONF = 'techcomm.urls'
 
+# URL to use if the authentication system requires a user to log in.
+LOGIN_URL = '/login'
+
+# Default URL to redirect to after a user logs in.
+LOGIN_REDIRECT_URL = '/myschedule'
+
 WSGI_APPLICATION = 'techcomm.wsgi.application'
 
 

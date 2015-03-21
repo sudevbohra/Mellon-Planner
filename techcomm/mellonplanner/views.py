@@ -1,71 +1,87 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
+from django.core.exceptions import ObjectDoesNotExist
 
-# Create your views here.
+# Decorator to use built-in authentication system
+from django.contrib.auth.decorators import login_required
 
-def resetData(context):
-    context['current_num'] = '0'
-    context['previous_num'] = ''
-    context['current_op'] = ''
-    
-# The action for the 'calculator/calc' route.
-def mellon(request):
+# Used to create and manually log in a user
+from django.contrib.auth.models import User
+from django.contrib.auth import login, authenticate
+
+from mellonplanner.models import *
+
+from django.core.context_processors import csrf
+
+@login_required
+def home(request):
+    try:
+        profile = Profile.objects.get(user=request.user)
+    except ObjectDoesNotExist:
+        return render(request, 'Login_Page.html', {})
     context = {}
+    context.update(csrf(request))
+    return render(request, 'Hello.html', context)
     
-    # Make sure all fields have their correct initial values
-    if 'current_num' in request.GET and request.GET['current_num'] != '':
-        context['current_num'] = request.GET['current_num']
-    if 'previous_num' in request.GET and request.GET['previous_num'] != '':
-        context['previous_num'] = request.GET['previous_num']
-    if 'current_op' in request.GET and request.GET['current_op'] != '':
-        context['current_op'] = request.GET['current_op']
-        
-    #Case 1: user pressed an op
-    if 'op' in request.GET:
-        if ('previous_num' not in request.GET or request.GET['previous_num'] == '') and request.GET['op'] == '=':
-            pass
-        elif 'previous_num' not in request.GET or request.GET['previous_num'] == '':
-            context['previous_num'] = request.GET['current_num']
-            context['current_num'] = ''
-            context['current_op'] = request.GET['op']
-        else:
-            if 'current_op' in request.GET:
-                try:
-                    previous_num = int(request.GET['previous_num'])
-                    current_num = int(request.GET['current_num'])
-                except ValueError:
-                    resetData(context)
-                    return render(request, 'calc.html', context)         
-                op = request.GET['current_op']
-                if(op == '+'):
-                    current_num = previous_num + current_num
-                elif(op == '-'):
-                    current_num = previous_num - current_num
-                elif(op == '*'):
-                    current_num = previous_num * current_num
-                elif(op == '/'):
-                    try:
-                        current_num = previous_num / current_num
-                    except ZeroDivisionError:
-                        resetData(context)
-                        # reset everything
-                        return render(request, 'calc.html', context)
-                        
-            if(request.GET['op'] == '='):
-                context['previous_num'] = ''
-                context['current_num'] = str(current_num)
-                context['current_op'] = ''
-            else:
-                context['previous_num'] = str(current_num)
-                context['current_num'] = ''
-                context['current_op'] = request.GET['op']
+def register(request):
+    context = {}
+    context.update(csrf(request))
 
-    #Case 2: user pressed a digit            
-    elif 'digit' in request.GET:
-        if 'current_num' in request.GET:
-            context['current_num'] = request.GET['current_num']
-        try:
-            context['current_num'] = str(int(context['current_num'] + request.GET['digit']))
-        except ValueError:
-            resetData(context)
+    # Just display the registration form if this is a GET request
+    if request.method == 'GET':
+        return render(request, 'Login_Page.html', context)
 
-    return render(request, 'calc.html', context)
+    errors = []
+    context['errors'] = errors
+
+    # Checks the validity of the form data
+    if not 'username1' in request.POST or not request.POST['username1']:
+	errors.append('Username is required.')
+    else:
+        # Save the username in the request context to re-fill the username
+        # field in case the form has errrors
+	context['username'] = request.POST['username1']
+    if not 'username2' in request.POST or not request.POST['username2']:
+	errors.append('Confirm username is required.')
+	
+    if 'username1' in request.POST and 'username2' in request.POST \
+       and request.POST['username1'] and request.POST['username2'] \
+       and request.POST['username1'] != request.POST['username2']:
+	errors.append('Usernames did not match.')
+
+    if not 'password1' in request.POST or not request.POST['password1']:
+	errors.append('Password is required.')
+    if not 'password2' in request.POST or not request.POST['password2']:
+	errors.append('Confirm password is required.')
+
+    if 'password1' in request.POST and 'password2' in request.POST \
+       and request.POST['password1'] and request.POST['password2'] \
+       and request.POST['password1'] != request.POST['password2']:
+	errors.append('Passwords did not match.')
+
+    if len(User.objects.filter(username = request.POST['username1'])) > 0:
+	errors.append('There is already an account linked to that username')
+
+    if errors:
+        return render(request, 'Login_Page.html', context)
+
+    # Creates the new user from the valid form data
+    new_user = User.objects.create_user(username=request.POST['username1'], \
+                                        password=request.POST['password1'])
+    new_user.save()
+
+    username = new_user.get_username()
+    fname = ''
+    lname = ''
+    if 'fname' in request.POST and request.POST['fname']:
+        fname = request.POST['fname']
+    if 'lname' in request.POST and request.POST['lname']:
+        lname = request.POST['lname']
+    new_user_profile = Profile(user=new_user, first_name=fname, \
+                               last_name=lname, username=username)
+    new_user_profile.save()
+    
+    # Logs in the new user and redirects to his/her profile
+    new_user = authenticate(username=request.POST['username1'], \
+                            password=request.POST['password1'])
+    login(request, new_user)
+    return redirect('/myschedule/')
