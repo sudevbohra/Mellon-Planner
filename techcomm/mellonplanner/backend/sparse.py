@@ -24,8 +24,9 @@ INDEX = {  'blank':0,
            'days':5,
            'timestart':6,
            'timeend':7,
-           'location':8,
-           'instructors':9}
+           'room':8,
+           'location':9,
+           'instructors':10}
 
 LINE_SPLIT_RE = r'<TR><TD.*?>|<TD.*?>|</TD><TD.*?>|</TD></TR>'
 LEC_RE = r'Lec\w*\d*'
@@ -49,16 +50,23 @@ def parseSched(f):
     activeLec = None
     lecStyle = False
 
-    # f is an html file object
+    allTokens = []
     i = 0
     for line in f:
         line = line.strip()
         line = line.replace('&nbsp;', '')
 
         tokens = re.split(LINE_SPLIT_RE, line)
-        #print(tokens)
+        allTokens.append(tokens)
 
-        if len(tokens) == 12:
+        i += 1
+
+    # f is an html file object
+    for i in range(len(allTokens)):
+        tokens = allTokens[i]
+
+        if len(tokens) >= 11:
+            blank = tokens[INDEX['blank']]
             cid = tokens[INDEX['id']]
             name = tokens[INDEX['name']]
             units = tokens[INDEX['units']]
@@ -69,30 +77,51 @@ def parseSched(f):
             location = tokens[INDEX['location']]
             instructors = tokens[INDEX['instructors']]
 
+            cid_intq = False
+            try:
+                _ = int(cid)
+                cid_intq = True
+            except:
+                pass
 
+            units_floatq = False
+            try:
+                _ = float(units)
+                units_floatq = True
+            except:
+                pass
+
+
+            if re.sub(r'\s*', '', location.lower()) == '':
+                #two-line name
+                if not cid or (cid and cid_intq):
+                    allTokens[i+1] = map(lambda (a,b): a+b, zip(tokens, allTokens[i+1]))
+                continue
+            else:
+                pass
 
             if cid:
                 # new class
                 if activeCls:
                     sched[activeCls.cId] = activeCls
-                try:
-                    _ = int(cid)
-                    activeCls = Cls(cid, int(float(units)) if units else 0)
-                except:
-                    pass
+                if cid_intq:
+                    activeCls = Cls(cid, int(float(units)) if units_floatq else 0)
 
+            if 'pittsburgh' not in location.lower():
+                continue
 
-
-            if not timestart or not timeend:
+            if not timestart or not timeend or not lecsec:
                 continue
             timestart = parseTime(timestart)
             timeend = parseTime(timeend)
 
-            if cid:
+            if cid and cid_intq:
                 activeLec = Lec(days, timestart, timeend)
                 activeCls.lecs = {lecsec:activeLec}
                 if re.match(LEC_RE, lecsec):
                     lecStyle = True
+                else:
+                    lecStyle = False
             elif lecsec and re.match(LEC_RE, lecsec):
                 #new lecture in style "Lec..."
                 lecStyle = True
@@ -106,9 +135,6 @@ def parseSched(f):
                 #recitation
                 newRec = Rec(days, timestart, timeend)
                 activeLec.recs[lecsec] = newRec
-
-
-        i += 1
 
 
     return sched
@@ -131,8 +157,6 @@ def getFullSchedule(semIndex):
     return result
 
 if __name__ == '__main__':
-    #print(parseTime('12:50AM'))
     t0 = time.clock()
     msched = getFullSchedule(0)
     print('Success .. %f' % (time.clock() - t0))
-    print(msched['21355'].tsplit())

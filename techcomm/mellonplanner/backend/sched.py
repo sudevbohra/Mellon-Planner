@@ -5,51 +5,63 @@ Created on Oct 23, 2014
 '''
 
 from Tkinter import *
-import random
+import random, math
 from graphUtil import *
 from sparse import getFullSchedule
 
 def randomCVal():
     return int((255+ random.random()*256)/2)
 
+def colorStr(r, g, b):
+    return '#' + hex(r)[2:].zfill(2) + hex(g)[2:].zfill(2) + hex(b)[2:].zfill(2)
 
 def randomColor():
     r = randomCVal()
     g = randomCVal()
     b = randomCVal()
-    return '#' + hex(r)[2:].zfill(2) + hex(g)[2:].zfill(2) + hex(b)[2:].zfill(2)
+    return colorStr(r,g,b)
+
+def dot(v1, v2):
+    x1,y1 = v1
+    x2,y2 = v2
+    return x1*x2 + y1*y2
+
+def mkColors(items):
+    n = len(items)
+
+    colors = {}
+    rv, gv, bv = (1.0,0.0), (-0.5, math.sqrt(3.0)/2.0), (-0.5, -math.sqrt(3.0)/2.0)
+    dt = 2 * math.pi / n
+    for i in range(n):
+        v  = (math.cos(dt * i), math.sin(dt * i))
+        rp = (255 + 2*int((dot(v, rv) + 1)/2.0 * 255))/3
+        gp = (255 + 2*int((dot(v, gv) + 1)/2.0 * 255))/3
+        bp = (255 + 2*int((dot(v, bv) + 1)/2.0 * 255))/3
+        #print(v, rp, gp, bp)
+        colors[items[i]] = colorStr(rp, gp, bp)
+    #random.shuffle(colors)
+    return colors
+
+
 
 
 def intersects(t1,t2):
     for k in t1:
         if k in t2:
-            (x1,y1),(x2,y2) = t1[k], t2[k]
-            if x1 < y2 and y1 > x2:
-                return True
+            for (x1,y1) in t1[k]:
+                for (x2,y2) in t2[k]:
+                    if x1 < y2 and y1 > x2:
+                        return True
     return False
 
 def flattenClasses(clss):
-    print(clss[0].tsplit())
+    #print('!%s!' % clss[0].tsplit())
     return [(fullId, t, cl) for cl in clss for (fullId,t) in cl.tsplit().items()]
 
 def minStartTime(t):
     return min(v[0] for (_,v) in t.items())
 
 
-#===============================================================================
-# cls0 = Cls('15213', units=12)
-# lec1 = Lec('TR', 13.50, 15)
-# lec1.recs = {'A':Rec('M', 10.5, 11.5), 'B':Rec('M', 10.5, 11.5), 'C':Rec('M', 11.5, 12.5), 'D':Rec('M', 12.5, 13.5)}
-# lec2 = Lec('TR', 18.5, 20)
-# lec2.recs = {'I':Rec('M', 10.5, 11.5), 'J':Rec('M', 11.5, 12.5), 'K':Rec('M', 12.5, 13.5), 'L':Rec('M', 13.5, 14.5)}
-# cls0.lecs = {'1': lec1, '2':lec2}
-#
-# clss_BILL = [cls0]
-#===============================================================================
-
-
-#ACTIVE_CLASS_LIST = clss_BILL
-#print(units)
 
 def getScheds(clss):
     tsg = flattenClasses(clss)
@@ -67,11 +79,58 @@ def getScheds(clss):
 
 
 if __name__ == '__main__':
+
+
     fullSched = getFullSchedule(0)
-    ACTIVE_CLASS_LIST = [fullSched['15213'],
-                         fullSched['21300'],
-                         fullSched['21441'],
-                         fullSched['21355']]
+    findClass = lambda cns: fullSched[cns] if cns in fullSched else None
+
+    classNums = ['21325',
+                  '57173',
+                  '21301',
+
+                  #MATH_DML
+                  '21329',
+                  '21374',
+                  '21484',
+                  '21602',
+                  '21610',
+                  '21700',
+                  '80411',
+                  '80413',
+                  '21603',
+
+                  #MATH
+                  '21292',
+                  '21356',
+                  '21371',
+                  '21372',
+                  '21393',
+                  '21465',
+                  '21467',
+                  '21476',
+                  '21499',
+
+
+                  #CS200+
+                  #'15214',
+                  #'15456',
+                  #'10601',
+
+                  #SSE
+                  #'15410',
+                  #'15411',
+                  '15440',
+                  '15441',
+                  #'15418'
+                  ]
+
+
+    #classNums = ['85340', '85442', '36309', '09217', '09221']
+    #classNums = ['09221']
+
+    allClasses = map(findClass, classNums)
+
+    ACTIVE_CLASS_LIST = filter(lambda v: v is not None, allClasses)
 
 
     scheds,units = getScheds(ACTIVE_CLASS_LIST)
@@ -80,14 +139,15 @@ if __name__ == '__main__':
     print(scheds[0])
 
     classes = ACTIVE_CLASS_LIST
+    COLORS = mkColors(classNums)
+    print(COLORS)
 
     ###############################################################################
-    COLORS = [randomColor() for _ in range(100)]
 
     WIDTH = 1000
     HEIGHT = 800
 
-    START_HR = 9
+    START_HR = 8
     NUM_HRS = 12
 
     RECT_PAD = 3
@@ -117,16 +177,16 @@ if __name__ == '__main__':
             c.create_line(0,y+linedy/2,WIDTH,y+linedy/2, dash=(100,10))
             c.create_text(5,y+5,anchor=NW,text=str((hr-1)%12 + 1))
 
-
         for (idx,(cIdr, td, cl)) in enumerate(sched):
-            col = COLORS[idx]
-            for (i,(v0,v1)) in td.items():
-                x0 = (i+1)*linedx+RECT_PAD
-                x1 = (i+2)*linedx-RECT_PAD
-                y0 = (v0-START_HR)*linedy+RECT_PAD
-                y1 = (v1-START_HR)*linedy-RECT_PAD
-                c.create_rectangle(x0,y0,x1,y1, fill=col)
-                c.create_text((x0+x1)/2,(y0+y1)/2,text=str(cIdr))
+            col = COLORS[cl.cId]
+            for (i,timeInts) in td.items():
+                for (v0,v1) in timeInts:
+                    x0 = (i+1)*linedx+RECT_PAD
+                    x1 = (i+2)*linedx-RECT_PAD
+                    y0 = (v0-START_HR)*linedy+RECT_PAD
+                    y1 = (v1-START_HR)*linedy-RECT_PAD
+                    c.create_rectangle(x0,y0,x1,y1, fill=col)
+                    c.create_text((x0+x1)/2,(y0+y1)/2,text=str(cIdr))
 
         c.pack()
 
@@ -196,6 +256,7 @@ if __name__ == '__main__':
 
     def switchSched(event):
         i = int(schedLb.curselection()[0])
+        #print(scheds[i])
         drawSchedule(scheds[i])
 
 

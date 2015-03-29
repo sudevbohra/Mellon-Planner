@@ -49,8 +49,8 @@ def prereqChain(start):
         for v in F:
             w = ps15(v)
             #print("(%s, %s)" % (v, w))
-            for t in w:
-                print('%s -> %s,' % (v,t))
+            #for t in w:
+            #    print('%s -> %s,' % (v,t))
             G[v] = w
             F = F.union(set(w))
         F = F - X
@@ -73,19 +73,20 @@ def topSort(G):
 
 
 
-dml_courses = [21441, 21355, 21341, 21301, 21300, 21228, 21484]
-cs_courses = [15251, 15210, 15122, 15317, 15150, 15151, 15213, 15451,
-              15221, 15354, 15355, 15453, 15455, 15456, 15312,
-              15410, 15411, 15418, 15440, 15441]
-phi_courses = [80310, 80311, 80405, 80411, 80413]
+if __name__ == '__main__':
+    dml_courses = [21441, 21355, 21341, 21301, 21300, 21228, 21484]
+    cs_courses = [15251, 15210, 15122, 15317, 15150, 15151, 15213, 15451,
+                  15221, 15354, 15355, 15453, 15455, 15456, 15312,
+                  15410, 15411, 15418, 15440, 15441]
+    phi_courses = [80310, 80311, 80405, 80411, 80413]
 
-#print('{')
-#gr = prereqChain(dml_courses + cs_courses)
-#print('}')
-#print("@"*10)
-#topSort(gr)
+    #print('{')
+    #gr = prereqChain(dml_courses + cs_courses)
+    #print('}')
+    #print("@"*10)
+    #topSort(gr)
 
-print(getAllPrereqs('80311'))
+    print(getAllPrereqs('80311'))
 
 
 

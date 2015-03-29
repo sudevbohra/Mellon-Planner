@@ -22,14 +22,18 @@ class Lec:
 
     def tsplit(self):
         if len(self.recs) == 0:
-            return {'' : {d: self.timeInt for d in self.lDays}}
+            return {'' : {d: [self.timeInt] for d in self.lDays}}
         else:
             options = {}
-            base = {d: self.timeInt for d in self.lDays}
+            #base = {d: [self.timeInt] for d in self.lDays}
             for (rn, rec) in self.recs.items():
-                b2 = base.copy()
-                rec_tmap = rec.tsplit()
-                b2.update(rec_tmap) #IMPORTANT ASSUMPTION: rec/lec never on same day; TODO: change
+                b2 = {d: [self.timeInt] for d in self.lDays}
+
+                for d in rec.rDays:
+                    if d in b2:
+                        b2[d].append(rec.timeInt)
+                    else:
+                        b2[d] = [rec.timeInt]
                 options['.%s' % rn.replace(' ', '_')] = b2
             return options
 
