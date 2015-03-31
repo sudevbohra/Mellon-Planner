@@ -5,9 +5,26 @@ Created on Oct 22, 2014
 '''
 
 import sets
+import time
 
 def dual(adjMatrix):
     return [[1-v for v in r] for r in adjMatrix]
+
+def adjComplement(adjList):
+    N = len(adjList)
+    compAdjList = []
+    for nbrs in adjList:
+        newNbrs = []
+        m = len(nbrs)
+        j = 0
+        for v in range(N):
+            if j >= m or (nbrs[j] != v):
+                newNbrs.append(v)
+            else:
+                j += 1
+        compAdjList.append(newNbrs)
+    return compAdjList
+
 
 def makeGraphAdjList(adjMatrix):
     #assm NxN
@@ -89,9 +106,15 @@ if __name__ == '__main__':
     TM = [[1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1], [0, 1, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0], [0, 1, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0], [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0], [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0], [0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0], [0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0], [1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0], [1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1]]
 
     tmDual = makeGraphAdjList(dual(M))
-    cqs= maximalCliques(tmDual)
-    print(len(cqs))
-    print('\n'.join(str(cq) for cq in cqs))
+
+    t0 = time.clock()
+    for _ in range(100):
+        balls = adjComplement(tmDual)
+    print(time.clock() - t0)
+
+    #cqs= maximalCliques(tmDual)
+    #print(len(cqs))
+    #print('\n'.join(str(cq) for cq in cqs))
 
     #G = makeGraphAdjList(M)
 

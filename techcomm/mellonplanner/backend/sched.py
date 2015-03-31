@@ -9,6 +9,8 @@ import random, math
 from graphUtil import *
 from sparse import getFullSchedule
 
+import time
+
 def randomCVal():
     return int((255+ random.random()*256)/2)
 
@@ -77,6 +79,35 @@ def getScheds(clss):
     scheds = [t[1] for t in scheds]
     return scheds,units
 
+def getScheds2(clss):
+    tsg = flattenClasses(clss)
+
+    N = len(tsg)
+    adj1 = [[j for j in range(N) if (i==j or tsg[i][2].cId == tsg[j][2].cId or intersects(tsg[i][1],tsg[j][1]))] for i in range(N)]
+    sccs = stronglyConnectedComponents(adj1)
+
+    maxIndepSets = [[]]
+
+    for scc in sccs:
+        idxTable = {scc[i]:i for i in range(len(scc))}
+        idxMap = lambda j: idxTable[j]
+        sccAdj = [map(idxMap, adj1[j]) for j in scc]
+        compAdj = adjComplement(sccAdj)
+        componentIndepSets = maximalCliques(compAdj)
+        restoredIndepSets = [[scc[i] for i in row] for row in componentIndepSets]
+        newMaxIndepSets = []
+        for mis in restoredIndepSets:
+            for prefix in maxIndepSets:
+                newMaxIndepSets.append(prefix + mis)
+        maxIndepSets = newMaxIndepSets
+
+
+    scheds = [[tsg[i] for i in s] for s in maxIndepSets]
+    units = [sum(t[2].units for t in s) for s in scheds]
+    scheds = sorted(zip(units,scheds),key=lambda t: t[0])
+    scheds = [t[1] for t in scheds]
+    return scheds,units
+
 
 if __name__ == '__main__':
 
@@ -100,15 +131,15 @@ if __name__ == '__main__':
                   '21603',
 
                   #MATH
-                  '21292',
-                  '21356',
-                  '21371',
-                  '21372',
-                  '21393',
-                  '21465',
-                  '21467',
-                  '21476',
-                  '21499',
+                 '21292',
+                 '21356',
+                 '21371',
+                 '21372',
+                 '21393',
+                 '21465',
+                 '21467',
+                 '21476',
+                 '21499',
 
 
                   #CS200+
@@ -117,13 +148,16 @@ if __name__ == '__main__':
                   #'10601',
 
                   #SSE
-                  #'15410',
-                  #'15411',
+                  '15410',
+                  '15411',
                   '15440',
                   '15441',
                   #'15418'
                   ]
 
+    #classNums = fullSched.keys()
+    #random.shuffle(classNums)
+    #classNums = classNums[:35]
 
     #classNums = ['85340', '85442', '36309', '09217', '09221']
     #classNums = ['09221']
@@ -132,8 +166,13 @@ if __name__ == '__main__':
 
     ACTIVE_CLASS_LIST = filter(lambda v: v is not None, allClasses)
 
-
+    t0 = time.clock()
+    scheds,units = getScheds2(ACTIVE_CLASS_LIST)
+    print(time.clock() - t0)
+    t0 = time.clock()
     scheds,units = getScheds(ACTIVE_CLASS_LIST)
+    print(time.clock() - t0)
+    exit(0)
 
     print(len(scheds))
     print(scheds[0])
