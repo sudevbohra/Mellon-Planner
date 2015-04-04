@@ -12,7 +12,7 @@ class Profile(models.Model):
     def __unicode__(self):
         return self.first_name + " " + self.last_name
 
-
+"""
 class Day(models.Model):
 	name = models.CharField(max_length=10)
 
@@ -33,3 +33,4 @@ class Course(models.Model):
 	name = models.CharField(max_length=100)
 	lectures = models.ManyToManyField(Lecture, related_name = "course")
 	units = models.IntegerField(max_length=2)
+"""
