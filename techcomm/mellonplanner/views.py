@@ -13,6 +13,28 @@ from mellonplanner.models import *
 from django.core.context_processors import csrf
 
 @login_required
+def getschedules(request):
+    profile = Profile.objects.get(user=request.user)
+    context = {}
+    context.update(csrf(request))
+    errors = []
+    context['errors'] = errors
+    if not 'loc' in request.POST or not request.POST['loc']:
+        errors.append('List of classes is required')
+    if not 'minunits' in request.POST or not request.POST['minunits']:
+        errors.append('Minimum units is required')
+    if not 'maxunits' in request.POST or not request.POST['maxunits']:
+        errors.append('Maximum units is required')
+    if(request.POST['minunits'] < 0 or
+       (request.POST['maxunits'] < request.POST['minunits'])):
+        errors.append('Invalid units')
+    list_of_classes = request.POST['loc'].split(", ")
+    # Should check for validity of classes here
+    # Then call the backend functions
+    # and finally put pictures in the context dictionary
+    return render(request, 'Hello.html', context)
+    
+@login_required
 def home(request):
     try:
         profile = Profile.objects.get(user=request.user)

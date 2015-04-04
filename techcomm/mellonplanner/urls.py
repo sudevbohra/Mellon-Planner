@@ -7,6 +7,7 @@ urlpatterns = patterns('',
     url(r'^logout$', 'django.contrib.auth.views.logout_then_login'),
     url(r'^register/$', 'mellonplanner.views.register'),
     url(r'^myschedule/', 'mellonplanner.views.home'),
-    url(r'^login/', 'mellonplanner.views.home'),                   
+    url(r'^login/', 'mellonplanner.views.home'),
+    url(r'^getschedules/', 'mellonplanner.views.getschedules'),
     #url(r'', 'mellonplanner.views.mellon'),
 )
