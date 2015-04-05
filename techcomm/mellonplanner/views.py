@@ -9,6 +9,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth import login, authenticate
 
 from mellonplanner.models import *
+from mellonplanner.backend.sched import getAllSchedules
 
 from django.core.context_processors import csrf
 
@@ -30,14 +31,18 @@ def getschedules(request):
     if(int(request.POST['minunits']) < 0 or
        (int(request.POST['maxunits']) < int(request.POST['minunits']))):
         errors.append('Invalid units')
-    list_of_classes = request.POST['loc'].split(", ")
+    list_of_classes = request.POST['loc'].replace(' ', '').split(", ")
     # Should check for validity of classes here, and add errors if any
     if errors:
         return render(request, 'Hello.html', context)
     # Then call the backend functions
+
+    schedules = getAllSchedules(list_of_classes)
+    print(schedules)
+
     # and finally put pictures in the context dictionary
     return render(request, 'Hello.html', context)
-    
+
 @login_required
 def home(request):
     try:
@@ -47,7 +52,7 @@ def home(request):
     context = {}
     context.update(csrf(request))
     return render(request, 'Hello.html', context)
-    
+
 def register(request):
     context = {}
     context.update(csrf(request))
@@ -68,7 +73,7 @@ def register(request):
 	context['username'] = request.POST['username1']
     if not 'username2' in request.POST or not request.POST['username2']:
 	errors.append('Confirm username is required.')
-	
+
     if 'username1' in request.POST and 'username2' in request.POST \
        and request.POST['username1'] and request.POST['username2'] \
        and request.POST['username1'] != request.POST['username2']:
@@ -105,7 +110,7 @@ def register(request):
     new_user_profile = Profile(user=new_user, first_name=fname, \
                                last_name=lname, username=username)
     new_user_profile.save()
-    
+
     # Logs in the new user and redirects to his/her profile
     new_user = authenticate(username=request.POST['username1'], \
                             password=request.POST['password1'])
