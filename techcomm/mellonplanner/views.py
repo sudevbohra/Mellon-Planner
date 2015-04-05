@@ -25,11 +25,15 @@ def getschedules(request):
         errors.append('Minimum units is required')
     if not 'maxunits' in request.POST or not request.POST['maxunits']:
         errors.append('Maximum units is required')
-    if(request.POST['minunits'] < 0 or
-       (request.POST['maxunits'] < request.POST['minunits'])):
+    if errors:
+        return render(request, 'Hello.html', context)
+    if(int(request.POST['minunits']) < 0 or
+       (int(request.POST['maxunits']) < int(request.POST['minunits']))):
         errors.append('Invalid units')
     list_of_classes = request.POST['loc'].split(", ")
-    # Should check for validity of classes here
+    # Should check for validity of classes here, and add errors if any
+    if errors:
+        return render(request, 'Hello.html', context)
     # Then call the backend functions
     # and finally put pictures in the context dictionary
     return render(request, 'Hello.html', context)

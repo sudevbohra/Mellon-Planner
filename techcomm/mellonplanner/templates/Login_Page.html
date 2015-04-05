@@ -47,7 +47,7 @@
         {% csrf_token %}
       </form><br><br>
       {% for error in errors %}
-      <p style="color:red">{{error}}</p>
+          <a style="color:red">{{error}}<br></a>
       {% endfor %}
     </div> <!-- /container -->
 
