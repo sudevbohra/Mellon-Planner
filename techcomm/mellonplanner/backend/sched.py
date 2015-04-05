@@ -63,23 +63,7 @@ def flattenClasses(clss):
 def minStartTime(t):
     return min(v[0] for (_,v) in t.items())
 
-
-
 def getScheds(clss):
-    tsg = flattenClasses(clss)
-
-    N = len(tsg)
-    intersectionMatrix = [[1 if i==j else int(tsg[i][2].cId == tsg[j][2].cId or intersects(tsg[i][1],tsg[j][1])) for i in range(N)] for j in range(N)]
-
-    maxIndepSets = sorted(independentSet(intersectionMatrix), key=len)
-
-    scheds = [[tsg[i] for i in s] for s in maxIndepSets]
-    units = [sum(t[2].units for t in s) for s in scheds]
-    scheds = sorted(zip(units,scheds),key=lambda t: t[0])
-    scheds = [t[1] for t in scheds]
-    return scheds,units
-
-def getScheds2(clss):
     tsg = flattenClasses(clss)
 
     N = len(tsg)
@@ -108,52 +92,31 @@ def getScheds2(clss):
     scheds = [t[1] for t in scheds]
     return scheds,units
 
+def getAllSchedules(classNums, sem=0):
+    classNums = map(lambda s: s.replace('-', ''), classNums)
+    fullSched = getFullSchedule(sem)
+    allClasses = [fullSched[cns] for cns in classNums if cns in fullSched]
+
+    scheds, units = getScheds(allClasses)
+
+    flatScheds = []
+    for i in range(len(scheds)):
+        for (name, tdict, _) in scheds[i]:
+            newName = name.replace('.', ' ').replace('_', ' ')
+            times = [(d, tstart, tend) for d in tdict for (tstart, tend) in tdict[d]]
+            flatScheds.append((newName, units[i], times))
+    return flatScheds
+
 
 if __name__ == '__main__':
 
 
+    print(getAllSchedules(['15213', '15440'], sem=0))
+
+    exit(0)
+
     fullSched = getFullSchedule(0)
     findClass = lambda cns: fullSched[cns] if cns in fullSched else None
-
-    classNums = ['21325',
-                  '57173',
-                  '21301',
-
-                  #MATH_DML
-                  '21329',
-                  '21374',
-                  '21484',
-                  '21602',
-                  '21610',
-                  '21700',
-                  '80411',
-                  '80413',
-                  '21603',
-
-                  #MATH
-                 '21292',
-                 '21356',
-                 '21371',
-                 '21372',
-                 '21393',
-                 '21465',
-                 '21467',
-                 '21476',
-                 '21499',
-
-
-                  #CS200+
-                  #'15214',
-                  #'15456',
-                  #'10601',
-
-                  #SSE
-                  '15410',
-                  '15411',
-                  '15440',
-                  '15441',
-                  #'15418'
-                  ]
 
     #classNums = fullSched.keys()
     #random.shuffle(classNums)
@@ -162,24 +125,16 @@ if __name__ == '__main__':
     #classNums = ['85340', '85442', '36309', '09217', '09221']
     #classNums = ['09221']
 
+    classNums = ['15213']
+
     allClasses = map(findClass, classNums)
 
     ACTIVE_CLASS_LIST = filter(lambda v: v is not None, allClasses)
 
-    t0 = time.clock()
-    scheds,units = getScheds2(ACTIVE_CLASS_LIST)
-    print(time.clock() - t0)
-    t0 = time.clock()
     scheds,units = getScheds(ACTIVE_CLASS_LIST)
-    print(time.clock() - t0)
-    exit(0)
-
-    print(len(scheds))
-    print(scheds[0])
 
     classes = ACTIVE_CLASS_LIST
     COLORS = mkColors(classNums)
-    print(COLORS)
 
     ###############################################################################
 
