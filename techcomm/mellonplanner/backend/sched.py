@@ -101,10 +101,12 @@ def getAllSchedules(classNums, sem=0):
 
     flatScheds = []
     for i in range(len(scheds)):
+        thisSched = []
         for (name, tdict, _) in scheds[i]:
             newName = name.replace('.', ' ').replace('_', ' ')
             times = [(d, tstart, tend) for d in tdict for (tstart, tend) in tdict[d]]
-            flatScheds.append((newName, units[i], times))
+            thisSched.append((newName, times))
+        flatScheds.append((units[i], thisSched))
     return flatScheds
 
 
