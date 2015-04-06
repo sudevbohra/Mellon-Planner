@@ -31,7 +31,7 @@ def getschedules(request):
     if(int(request.POST['minunits']) < 0 or
        (int(request.POST['maxunits']) < int(request.POST['minunits']))):
         errors.append('Invalid units')
-    list_of_classes = request.POST['loc'].replace(' ', '').split(", ")
+    list_of_classes = request.POST['loc'].replace(' ', '').split(",")
     # Should check for validity of classes here, and add errors if any
     if errors:
         return render(request, 'Hello.html', context)
@@ -39,9 +39,36 @@ def getschedules(request):
 
     schedules = getAllSchedules(list_of_classes)
     print(schedules)
+    print(list_of_classes)
+    listFormatted = []
+    schedule1 = schedules[0]
+    units = schedule1[0]
+    classList = schedule1[1]
+    
+    for cls in classList:
+        listFormatted.extend(convertTimeList(cls[0],cls[1]))
+
+    print listFormatted
+    #('15122 Lec 2 N', 20, [(0, 12.5, 13.5), (1, 10.5, 12.0), (3, 10.5, 12.0)]), ('21127 Lec 2 H', 20, [(0, 14.5, 15.5), (1, 13.5, 14.5), (2, 14.5, 15.5), (3, 13.5, 14.5), (4, 14.5, 15.5)])
+    context['schedule'] = listFormatted
 
     # and finally put pictures in the context dictionary
     return render(request, 'Hello.html', context)
+
+numberToDate = {-1: '2015-02-08T', 0: '2015-02-09T', 1: '2015-02-10T', 2: '2015-02-11T', 3:'2015-02-12T', 4:'2015-02-13T', 5:'2015-02-14T', 6:'2015-02-15T'}
+
+
+
+def convertTimeList(klass, l):
+    formattedL = []
+    for day,start,end in l:
+        start = str(start).replace('.5', ':30:00')
+        start = start.replace('.0', ':00:00')
+        end = str(end).replace('.5', ':30:00')
+        end = end.replace('.0', ':00:00')
+        formattedL.append({'start':numberToDate[day]+ start , 'end':numberToDate[day]+end, 'title':klass})
+    return formattedL
+
 
 @login_required
 def home(request):

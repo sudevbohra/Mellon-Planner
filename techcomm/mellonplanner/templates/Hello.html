@@ -64,6 +64,7 @@
                     <option value="Fall">Fall</option>
                     <option value="Spring">Spring</option>
                     <option value="Summer 1">Summer 1/All</option>
+
                     <option value="Summer 2">Summer 2</option>
 
                 </select>
@@ -83,7 +84,8 @@
             </form>
         </div>
         <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
-          <div id='calendar'></div>
+          <div id='calendar1'></div>
+          
         </div>
       </div>
     </div>
@@ -97,8 +99,8 @@
     <script>
 
   $(document).ready(function() {
-    
-    $('#calendar').fullCalendar({
+
+    $('#calendar1').fullCalendar({
       minTime: '06:00:00',
       defaultView: 'agendaWeek',
       header: {
@@ -111,60 +113,22 @@
       editable: false,
       eventLimit: true, // allow "more" link when too many events
       events: [
-        {
-          id: 999,
-          title: 'Repeating Event',
-          start: '2015-02-09T16:00:00'
-        },
-        {
-          id: 999,
-          title: 'Repeating Event',
-          start: '2015-02-16T16:00:00'
-        },
-        {
-          title: 'Conference',
-          start: '2015-02-11',
-          end: '2015-02-13'
-        },
-        {
-          title: 'Meeting',
-          start: 'SundayT10:30:00',
-          end: 'SundayT12:30:00'
-        },
-        {
-          title: 'Lunch',
-          start: '2015-02-12T12:00:00'
-        },
-        {
-          title: 'Meeting',
-          start: '2015-02-12T14:30:00'
-        },
-        {
-          title: 'Happy Hour',
-          start: '2015-02-12T17:30:00'
-        },
-        {
-          title: 'Dinner',
-          start: '2015-02-12T20:00:00'
-        },
-        {
-          title: 'Birthday Party',
-          start: '2015-02-13T07:00:00'
-        },
-        {
-          title: 'Click for Google',
-          url: 'http://google.com/',
-          start: '2015-02-28'
-        }
+      {% for cls in schedule %}
+      {
+        title: '{{cls.title}}',
+        start: '{{cls.start}}',
+        end: '{{cls.end}}'
+      },
+      {% endfor %}
       ]
     });
-    // $( "th.fc-sun" ).html("Sunday");
-    // $( "th.fc-mon" ).html("Monday");
-    // $( "th.fc-tue" ).html("Tuesday");
-    // $( "th.fc-wed" ).html("Wednesday");
-    // $( "th.fc-thu" ).html("Thursday");
-    // $( "th.fc-fri" ).html("Friday");
-    // $( "th.fc-sat" ).html("Saturday");
+    $( "th.fc-sun" ).html("Sunday");
+    $( "th.fc-mon" ).html("Monday");
+    $( "th.fc-tue" ).html("Tuesday");
+    $( "th.fc-wed" ).html("Wednesday");
+    $( "th.fc-thu" ).html("Thursday");
+    $( "th.fc-fri" ).html("Friday");
+    $( "th.fc-sat" ).html("Saturday");
   });
   
 
