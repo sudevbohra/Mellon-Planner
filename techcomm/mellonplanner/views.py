@@ -38,17 +38,17 @@ def getschedules(request):
     # Then call the backend functions
 
     schedules = getAllSchedules(list_of_classes)
-    print(schedules)
-    print(list_of_classes)
+    #print(schedules)
+    #print(list_of_classes)
     listFormatted = []
     schedule1 = schedules[0]
     units = schedule1[0]
     classList = schedule1[1]
-    
+
     for cls in classList:
         listFormatted.extend(convertTimeList(cls[0],cls[1]))
 
-    print listFormatted
+    #print listFormatted
     #('15122 Lec 2 N', 20, [(0, 12.5, 13.5), (1, 10.5, 12.0), (3, 10.5, 12.0)]), ('21127 Lec 2 H', 20, [(0, 14.5, 15.5), (1, 13.5, 14.5), (2, 14.5, 15.5), (3, 13.5, 14.5), (4, 14.5, 15.5)])
     context['schedule'] = listFormatted
 
@@ -62,10 +62,13 @@ numberToDate = {-1: '2015-02-08T', 0: '2015-02-09T', 1: '2015-02-10T', 2: '2015-
 def convertTimeList(klass, l):
     formattedL = []
     for day,start,end in l:
+        #HH:MM:SS
         start = str(start).replace('.5', ':30:00')
         start = start.replace('.0', ':00:00')
+        start = start.zfill(8)
         end = str(end).replace('.5', ':30:00')
         end = end.replace('.0', ':00:00')
+        end = end.zfill(8)
         formattedL.append({'start':numberToDate[day]+ start , 'end':numberToDate[day]+end, 'title':klass})
     return formattedL
 

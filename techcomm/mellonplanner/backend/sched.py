@@ -115,7 +115,7 @@ if __name__ == '__main__':
 
     print(getAllSchedules(['15213', '15440'], sem=0))
 
-    exit(0)
+    #exit(0)
 
     fullSched = getFullSchedule(0)
     findClass = lambda cns: fullSched[cns] if cns in fullSched else None
@@ -127,7 +127,7 @@ if __name__ == '__main__':
     #classNums = ['85340', '85442', '36309', '09217', '09221']
     #classNums = ['09221']
 
-    classNums = ['15213']
+    classNums = ['15440', '21325', '21301', '57173', '21371']
 
     allClasses = map(findClass, classNums)
 
