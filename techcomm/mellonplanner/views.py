@@ -20,7 +20,7 @@ def getschedule(request, index):
         context['errors'] = ["Reinput classes or check cookies"]
         return render(request, 'index.html', context)
     if index > len(request.session['schedules']):
-        context['errors'] = [str(type(request.session['schedules']))]
+        context['errors'] = ['Incorrect page number']
         return render(request, 'index.html', context)
     allListFormatted,unitsList = request.session['schedules'],request.session['units']
     context['schedule'] = allListFormatted[index]
@@ -72,7 +72,7 @@ def getschedules(request):
 
         schedule1 = schedule
         units = schedule1[0]
-        print units
+        
         classList = schedule1[1]
 
         for cls in classList:
