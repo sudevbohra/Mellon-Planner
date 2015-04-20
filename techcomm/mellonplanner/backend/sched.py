@@ -127,7 +127,7 @@ if __name__ == '__main__':
     #classNums = ['85340', '85442', '36309', '09217', '09221']
     #classNums = ['09221']
 
-    classNums = ['15440', '21325', '21301', '57173', '21371']
+    classNums = ['15122','21127','15150']
 
     allClasses = map(findClass, classNums)
 

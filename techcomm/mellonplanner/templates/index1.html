@@ -27,7 +27,6 @@
   </head>
 
   <body>
-
     <nav class="navbar navbar-inverse navbar-fixed-top">
       <div class="container-fluid">
         <div class="navbar-header">
@@ -42,11 +41,10 @@
         <div id="navbar" class="navbar-collapse collapse">
           <ul class="nav navbar-nav navbar-right">
             <li>
-                <a>
-                  <form method="post" action="/logout">
-                    <input type="submit" value="Logout" class="btn btn-primary">
-                    {% csrf_token %}
-                  </form>
+                <a href="{% url 'home' %}">
+                  
+                    <button  value="" class="btn btn-primary">Try New Schedule</button>
+                    
                 </a>
             </li>
           </ul>
@@ -54,41 +52,43 @@
       </div>
     </nav>
 
-    <div class="container-fluid">
-      <div class="row">
-        <div class="col-sm-3 col-md-2 sidebar">
-          <br><br><br><br>
-            <form method="post" action="/getschedules/">
-              
-                <select name="semester" class="form-control">
-                    <option value="Fall">Fall</option>
-                    <option value="Spring">Spring</option>
-                    <option value="Summer 1">Summer 1/All</option>
+    <div id="wrapper">
 
-                    <option value="Summer 2">Summer 2</option>
+    <!-- Sidebar -->
+    <div id="sidebar-wrapper" style="background: url(http://subtlepatterns.com/patterns/congruent_outline.png);">
+        <ul class="sidebar-nav">
+            <li class="sidebar-brand">
+                <div>
+                 Classroom {{current_class}}     <button style="position:relative; margin-left:110px; "class="btn btn-info" data-toggle="modal" data-target="#myModal"><span class="glyphicon glyphicon-file"></span> Add Post</button>
+                </div>
+            </li>
+            {% for i,units in unitsList %}
+                {% if i == currentIndex %}
+                  <li class="active"><a href="{% url 'getschedule' i %}">{{i}} ({{units}})</a></li>
+                {% else %}
 
-                </select>
-              <br>
-              <input type="text" name="loc" class="form-control" placeholder="Enter classes" required autofocus>
-              (For example: 15-122, 15-150, 21-127, 57-173...)
-              <br>
-              <input type="text" name="minunits" class="form-control" placeholder="Enter minimum units" required autofocus>
-              (Enter the minimum units you need to take)
-              <br>
-              <input type="text" name="maxunits" class="form-control" placeholder="Enter maximum units" required autofocus>
-              (Enter the maximum units you are willing to take)
-              <br>
-              <br>
-              <input type="submit" value="Submit" class="btn btn-primary">
-              {% csrf_token %}
-            </form>
-        </div>
-        <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+                  <li><a href="{% url 'getschedule' i %}">{{i}} ({{units}})</a></li>
+                {% endif %}
+              {% endfor %}
+            
+        </ul>
+    </div>
+    <!-- /#sidebar-wrapper -->
+
+    <!-- Page Content -->
+    <div id="page-content-wrapper" style="margin-top:60px">
           <div id='calendar1'></div>
           
+          
+           {% for error in errors %}
+                <div class="alert alert-dismissible alert-danger">
+                <button type="button" class="close" data-dismiss="alert">×</button>
+                <strong>Oh snap!</strong> <a href="#" class="alert-link">{{ error }}
+              </div>
+          {% endfor %}
         </div>
       </div>
-    </div>
+   
 
     <!-- Bootstrap core JavaScript
     ================================================== -->
