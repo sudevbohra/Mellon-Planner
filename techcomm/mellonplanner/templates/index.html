@@ -68,13 +68,17 @@
 
                 </select>
               <br>
+              {% if courses %}
+              <input type="text" name="loc" class="form-control" placeholder="Enter classes" value= "{{courses}}" required autofocus>
+              {% else %}
               <input type="text" name="loc" class="form-control" placeholder="Enter classes" required autofocus>
+              {% endif %}
               (For example: 15-122, 15-150, 21-127, 57-173...)
               <br>
-              <input type="text" name="minunits" class="form-control" placeholder="Enter minimum units" required autofocus>
+              <input type="text" name="minunits" class="form-control" placeholder="Enter minimum units" value = "{{minunits}}" autofocus>
               (Enter the minimum units you need to take)
               <br>
-              <input type="text" name="maxunits" class="form-control" placeholder="Enter maximum units" required autofocus>
+              <input type="text" name="maxunits" class="form-control" placeholder="Enter maximum units" value = "{{maxunits}}"autofocus>
               (Enter the maximum units you are willing to take)
               <br>
               <br>

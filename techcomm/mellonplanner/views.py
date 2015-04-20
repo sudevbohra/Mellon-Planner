@@ -14,23 +14,28 @@ from mellonplanner.backend.sched import getAllSchedules
 from django.core.context_processors import csrf
 
 def getschedule(request, index):
-    index = int(index)
-    context = {}
-    if 'schedules' not in request.session:
-        context['errors'] = ["Reinput classes or check cookies"]
-        return render(request, 'index.html', context)
-    if index > len(request.session['schedules']):
-        context['errors'] = ['Incorrect page number']
-        return render(request, 'index.html', context)
-    allListFormatted,unitsList = request.session['schedules'],request.session['units']
-    context['schedule'] = allListFormatted[index]
+    try:
+        index = int(index)
+        context = {}
+        if 'schedules' not in request.session:
+            context['errors'] = ["Reinput classes or check cookies"]
+            return render(request, 'index.html', context)
+        if index > len(request.session['schedules']):
+            context['errors'] = ['Incorrect page number']
+            return render(request, 'index.html', context)
+        allListFormatted,unitsList = request.session['schedules'],request.session['units']
+        context['schedule'] = allListFormatted[index]
 
-    #context['scheduleCount'] = len(allListFormatted)
-    
-    context['unitsList'] = enumerate(unitsList)
-    context['currentIndex'] = index
-    # and finally put pictures in the context dictionary
-    return render(request, 'index.html', context)
+        #context['scheduleCount'] = len(allListFormatted)
+        
+        context['unitsList'] = enumerate(unitsList)
+        context['currentIndex'] = index
+        context['courses'],context['minunits'],context['maxunits'] = request.session['courses'],request.session['minunits'],request.session['maxunits']
+
+        # and finally put pictures in the context dictionary
+        return render(request, 'index.html', context)
+    except Exception:
+        return render(request, 'index.html', context)
 
 
 def getschedules(request):
@@ -42,15 +47,8 @@ def getschedules(request):
     context['errors'] = errors
     if not 'loc' in request.POST or not request.POST['loc']:
         errors.append('List of classes is required')
-    if not 'minunits' in request.POST or not request.POST['minunits']:
-        errors.append('Minimum units is required')
-    if not 'maxunits' in request.POST or not request.POST['maxunits']:
-        errors.append('Maximum units is required')
     if errors:
         return render(request, 'index.html', context)
-    if(int(request.POST['minunits']) < 0 or
-       (int(request.POST['maxunits']) < int(request.POST['minunits']))):
-        errors.append('Invalid units')
     list_of_classes = request.POST['loc'].replace(' ', '').split(",")
     # Should check for validity of classes here, and add errors if any
     # Then call the backend functions
@@ -82,12 +80,35 @@ def getschedules(request):
         unitsList += [units]
 
 
+    if not 'minunits' in request.POST or not request.POST['minunits']:
+        minunits = 0
+    else:
+        minunits = request.POST['minunits']
+
+    if not 'maxunits' in request.POST or not request.POST['maxunits']:
+        maxunits = 150
+    else:
+        maxunits = request.POST['maxunits']
+    if minunits == 0 and maxunits == 150:
+        toFilter = False
+    else:
+        toFilter = True
+
+    zippedList = zip(allListFormatted, unitsList)
+    allListFormatted, unitsList = [],[]
+    if toFilter:
+        for formatted,units in zippedList:
+            if int(units) <= int(maxunits) and int(minunits) <= int(units):
+                allListFormatted += [formatted]
+                unitsList += [units]
     #print listFormatted
     #('15122 Lec 2 N', 20, [(0, 12.5, 13.5), (1, 10.5, 12.0), (3, 10.5, 12.0)]), ('21127 Lec 2 H', 20, [(0, 14.5, 15.5), (1, 13.5, 14.5), (2, 14.5, 15.5), (3, 13.5, 14.5), (4, 14.5, 15.5)])
-    context['schedule'] = listFormatted
-
+    if len(allListFormatted) > 0:
+        context['schedule'] = allListFormatted[0]
     #context['scheduleCount'] = len(allListFormatted)
+    request.session['courses'],request.session['minunits'],request.session['maxunits'] = request.POST['loc'],request.POST['minunits'],request.POST['maxunits']
     request.session['schedules'],request.session['units'] = allListFormatted,unitsList
+    context['courses'] = request.session['courses']
     context['unitsList'] = enumerate(unitsList)
     context['currentIndex'] = 0
     # and finally put pictures in the context dictionary
@@ -121,6 +142,9 @@ def home(request):
     #     profile = Profile.objects.get(user=request.user)
     # except ObjectDoesNotExist:
     #     return render(request, 'Login_Page.html', {})
+
+    if 'courses' in request.session:
+        context['courses'] = request.session['courses']
     context = {}
     # context.update(csrf(request))
     return render(request, 'index.html', context)
